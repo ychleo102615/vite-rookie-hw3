@@ -159,6 +159,10 @@ main {
   justify-content: center;
 }
 
+/* .container {
+  display: flex;
+} */
+
 .ordering-container {
   display: flex;
 }
@@ -249,8 +253,9 @@ main {
 
 .order-com {
   width: 70%;
-  justify-self: center;
-  margin-top: 20px;
+  /* justify-self: center; */
+  align-self: center;
+  margin: 20px auto 0; /* 置中：左右 auto */
   padding: 16px;
   border-radius: 6px;
   border: 0.1px solid #adadad;
