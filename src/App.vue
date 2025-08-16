@@ -98,12 +98,7 @@ const sendOrder = () => {
               <CartItem
                 v-for="item in cartList"
                 :key="item.id"
-                :id="item.id"
-                :name="item.name"
-                :sub="item.sub"
-                :price="item.price"
-                :quantity="item.quantity"
-                :total="item.total"
+                :item="item"
                 @remove="remove"
                 @update-quantity="updateQuantity"
               />
