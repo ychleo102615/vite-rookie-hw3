@@ -1,5 +1,6 @@
 <script setup>
 import CartItem from './components/CartItem.vue'
+import Order from './components/Order.vue'
 import { ref } from 'vue'
 
 const data = [
@@ -46,77 +47,110 @@ const updateQuantity = (id, quantity) => {
 const remove = (id) => {
   cartList.value = cartList.value.filter((item) => item.id !== id)
 }
+
+const orderedItems = ref([])
+const orderingMemo = ref('')
+const orderedMemo = ref('')
+const maxLength = 100
+const orderedTotal = ref(0)
+
+const sendOrder = () => {
+  if (cartList.value.length === 0) {
+    alert('請先選擇商品')
+    return
+  }
+  orderedItems.value = [...cartList.value]
+  cartList.value = []
+  orderedMemo.value = orderingMemo.value
+  orderingMemo.value = ''
+  orderedTotal.value = orderedItems.value.reduce((sum, item) => sum + item.total, 0)
+}
 </script>
 
 <template>
   <main>
-    <section class="container">
-      <!--  左側餐點項目 -->
-      <section class="left">
-        <h2>餐點項目</h2>
-        <section
-          class="product-card"
-          v-for="(item, index) in itemList"
-          :key="index"
-          @click="addToCart(item)"
-        >
-          <div class="card-header">
-            <h2 class="name" style="line-height: 1.2; margin: 0">{{ item.name }}</h2>
-            <span class="price">${{ item.price }}</span>
+    <div class="container">
+      <section class="ordering-container">
+        <!--  左側餐點項目 -->
+        <section class="left">
+          <h2>餐點項目</h2>
+          <section
+            class="product-card"
+            v-for="(item, index) in itemList"
+            :key="index"
+            @click="addToCart(item)"
+          >
+            <div class="card-header">
+              <h2 class="name" style="line-height: 1.2; margin: 0">{{ item.name }}</h2>
+              <span class="price">${{ item.price }}</span>
+            </div>
+            <p class="description" style="line-height: 1.4; margin: 0">{{ item.sub }}</p>
+          </section>
+        </section>
+
+        <!--  右側點餐畫面 -->
+        <section class="right">
+          <h2>點餐畫面</h2>
+          <table>
+            <colgroup>
+              <col style="width: 10%" />
+              <col style="width: 15%" />
+              <col style="width: 35%" />
+              <col style="width: 15%" />
+              <col style="width: 10%" />
+              <col style="width: 15%" />
+            </colgroup>
+            <thead>
+              <tr>
+                <th v-for="title in titles" :key="title">
+                  {{ title }}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <CartItem
+                v-for="item in cartList"
+                :key="item.id"
+                :id="item.id"
+                :name="item.name"
+                :sub="item.sub"
+                :price="item.price"
+                :quantity="item.quantity"
+                :total="item.total"
+                @remove="remove"
+                @update-quantity="updateQuantity"
+              />
+            </tbody>
+          </table>
+          <div class="please-select" v-if="cartList.length === 0">
+            <p>請選擇商品</p>
           </div>
-          <p class="description" style="line-height: 1.4; margin: 0">{{ item.sub }}</p>
+          <div v-else>
+            <h3 style="line-height: 1.2; text-align: right">
+              總計: ${{ cartList.reduce((sum, item) => sum + item.total, 0) }}
+            </h3>
+            <!-- 備注區塊 -->
+            <textarea
+              v-model.trim="orderingMemo"
+              :maxlength="maxLength"
+              class="memo-input"
+              rows="3"
+              placeholder="備註"
+            ></textarea>
+            <button class="send-order" @click="sendOrder">送出</button>
+          </div>
         </section>
       </section>
-
-      <!--  右側點餐畫面 -->
-      <section class="right">
-        <h2>點餐畫面</h2>
-        <table>
-          <colgroup>
-            <col style="width: 10%" />
-            <col style="width: 15%" />
-            <col style="width: 35%" />
-            <col style="width: 15%" />
-            <col style="width: 10%" />
-            <col style="width: 15%" />
-          </colgroup>
-          <thead>
-            <tr>
-              <th v-for="title in titles" :key="title">
-                {{ title }}
-              </th>
-            </tr>
-            <!-- <th>操作</th>
-            <th>品項</th>
-            <th>描述</th>
-            <th>數量</th>
-            <th>單價</th>
-            <th>小記</th> -->
-          </thead>
-          <tbody>
-            <CartItem
-              v-for="item in cartList"
-              :key="item.id"
-              :id="item.id"
-              :name="item.name"
-              :sub="item.sub"
-              :price="item.price"
-              :quantity="item.quantity"
-              :total="item.total"
-              @remove="remove"
-              @update-quantity="updateQuantity"
-            />
-          </tbody>
-        </table>
-        <div class="please-select" v-if="cartList.length === 0">
-          <p>請選擇商品</p>
-        </div>
-      </section>
-    </section>
+      <Order
+        v-if="orderedItems.length > 0"
+        class="order-com"
+        :ordered-items="orderedItems"
+        :total="orderedTotal"
+        :order-memo="orderedMemo"
+      />
+      <div v-else class="not-ordered order-com">尚未建立訂單</div>
+    </div>
   </main>
-  <footer>
-    <!-- 訂單  -->
-  </footer>
 </template>
 
 <style scoped>
@@ -125,7 +159,7 @@ main {
   justify-content: center;
 }
 
-.container {
+.ordering-container {
   display: flex;
 }
 
@@ -134,9 +168,9 @@ main {
   /* background: #f0f0f0; */
 }
 .right {
-  width: 600px; /* 右側固定寬度 */
-  background: #f9f9f9;
-  margin-left: 20px; /* 右側與左側之間的間距 */
+  width: 600px;
+  /* background: #f9f9f9; */
+  margin-left: 20px;
 }
 
 /* 卡片樣式 可點擊 hover變色 */
@@ -186,15 +220,41 @@ main {
   margin-top: 8px;
 }
 
-/* p {
-  margin: 0;
-  line-height: 1.4;
-} */
+.memo-input {
+  width: 100%;
+  padding: 8px;
+  box-sizing: border-box;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
 
-/* h2 {
-  margin: 0 0 8px;
-  line-height: 1.2;
-} */
+.send-order {
+  background-color: #2563eb; /* 藍底 */
+  color: #fff; /* 白字 */
+  border: none;
+  border-radius: 6px; /* 圓角 */
+  padding: 8px 16px;
+  cursor: pointer;
+  float: right; /* 向右靠齊 */
+  margin-top: 8px;
+}
+.send-order:hover {
+  background-color: #1e4db7; /* hover 稍深藍 */
+}
+
+.not-ordered {
+  text-align: center;
+  background-color: #e6e6e6;
+}
+
+.order-com {
+  width: 70%;
+  justify-self: center;
+  margin-top: 20px;
+  padding: 16px;
+  border-radius: 6px;
+  border: 0.1px solid #adadad;
+}
 
 table {
   border-collapse: collapse; /* 或者用 border-spacing: 0; */
