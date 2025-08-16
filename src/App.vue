@@ -1,6 +1,7 @@
 <script setup>
 import CartItem from './components/CartItem.vue'
 import Order from './components/Order.vue'
+import Menu from './components/Menu.vue'
 import { ref } from 'vue'
 
 const data = [
@@ -72,21 +73,7 @@ const sendOrder = () => {
     <div class="container">
       <section class="ordering-container">
         <!--  左側餐點項目 -->
-        <section class="left">
-          <h2>餐點項目</h2>
-          <section
-            class="product-card"
-            v-for="(item, index) in itemList"
-            :key="index"
-            @click="addToCart(item)"
-          >
-            <div class="card-header">
-              <h2 class="name" style="line-height: 1.2; margin: 0">{{ item.name }}</h2>
-              <span class="price">${{ item.price }}</span>
-            </div>
-            <p class="description" style="line-height: 1.4; margin: 0">{{ item.sub }}</p>
-          </section>
-        </section>
+        <Menu class="left" :item-list="itemList" @add-to-cart="addToCart"></Menu>
 
         <!--  右側點餐畫面 -->
         <section class="right">
@@ -175,40 +162,6 @@ main {
   width: 600px;
   /* background: #f9f9f9; */
   margin-left: 20px;
-}
-
-/* 卡片樣式 可點擊 hover變色 */
-.product-card {
-  box-sizing: border-box;
-  border: 1px solid #ccc;
-  padding: 12px;
-  width: 100%;
-  margin-bottom: -1px;
-  cursor: pointer;
-}
-
-.product-card:hover {
-  background: #f9f9f9; /* 滑鼠移入時背景變色 */
-}
-
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-}
-
-.name {
-  font-size: 1.2em;
-  font-weight: bold;
-}
-
-.price {
-  font-weight: bold;
-}
-
-.description {
-  font-size: 0.9em;
-  color: #555;
 }
 
 .please-select {
